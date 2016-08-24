@@ -48,3 +48,21 @@ _GLX_PUBLIC void (*glXGetProcAddressARB(const GLubyte * procName)) (void)
 	next = dlsym(RTLD_NEXT, "glXGetProcAddressARB");
     return ((_GLX_PUBLIC void (*(*)(const GLubyte *))(void))next)(procName);
 }
+
+#include <unistd.h>
+#include <stdlib.h>
+long sysconf(int name)
+{
+    static void *next = NULL;
+    static const char *over = NULL;
+
+    if(name == _SC_NPROCESSORS_ONLN) {
+	if(!over)
+	    over = getenv("PROCESSORS_ONLINE");
+	if(over)
+	    return(strtol(over, NULL, 10));
+    }
+    if(!next)
+	next = dlsym(RTLD_NEXT, "sysconf");
+    return ((long (*)(int))next)(name);
+}
